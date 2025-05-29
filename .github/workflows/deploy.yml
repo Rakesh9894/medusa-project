@@ -1,0 +1,60 @@
+name: Deploy Medusa Backend to AWS ECS
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    name: Deploy to AWS
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: terraform # Ensures Terraform commands run inside "terraform/" directory
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: latest
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Log in to Docker Hub
+        run: echo "${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}" | docker login -u "${{ secrets.DOCKER_HUB_USERNAME }}" --password-stdin
+
+      - name: Build and Push Docker Image
+        run: |
+          cd ..
+          docker build -t talibk/medusa-backend .
+          docker tag talibk/medusa-backend:latest talibk/medusa-backend:latest
+          docker push talibk/medusa-backend:latest
+
+      - name: Initialize Terraform
+        run: terraform init
+
+      - name: Plan Terraform Changes
+        run: terraform plan
+
+      - name: Apply Terraform Changes
+        run: terraform apply -auto-approve
+
+      - name: Force New Deployment in ECS
+        run: |
+          aws ecs update-service --cluster medusa-cluster --service medusa-service --force-new-deployment
+
+      # Uncomment below if you want to destroy
+      # - name: Plan Terraform Destroy
+      #   run: terraform plan -destroy
+
+      # - name: Apply Terraform Destroy
+      #   run: terraform destroy -auto-approve

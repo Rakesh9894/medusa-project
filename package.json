@@ -1,0 +1,18 @@
+{
+  "name": "pearlthoughts-projects",
+  "version": "1.0.0",
+  "description": "This project demonstrates Infrastructure as Code (IaC) using **Terraform** to deploy the **Medusa headless commerce backend** on **AWS ECS with Fargate**, along with a **GitHub Actions** CI/CD pipeline.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@medusajs/medusa": "^2.6.1",
+    "@medusajs/medusa-cli": "^1.3.23",
+    "express": "^4.21.2",
+    "pg": "^8.14.1"
+  }
+}
